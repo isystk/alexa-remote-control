@@ -50,8 +50,8 @@ case ${1} in
           login)
               $DOCKER_COMPOSE exec ubuntu /bin/sh
           ;;
-          command)
-                $DOCKER_COMPOSE exec alexa /bin/sh -c "./alexa_remote_control.sh -e 'speak:テスト'"
+          test)
+                $DOCKER_COMPOSE exec ubuntu /bin/sh -c "./alexa_remote_control.sh -e 'speak:テスト'"
           ;;
           *)
               usage
