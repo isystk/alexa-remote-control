@@ -1,88 +1,124 @@
+# 🌙 alexa-remote-control
 
-# alexa-remote-control
-control Amazon Alexa from command Line
+![GitHub issues](https://img.shields.io/github/issues/isystk/alexa-remote-control)
+![GitHub forks](https://img.shields.io/github/forks/isystk/alexa-remote-control)
+![GitHub stars](https://img.shields.io/github/stars/isystk/alexa-remote-control)
+![GitHub license](https://img.shields.io/github/license/isystk/alexa-remote-control)
 
-The settings can now be controlled via environment variables.
-```
-EMAIL     - your login email
-PASSWORD  - your login password
-BROWSER   - the User-Agent your browser sends in the request header
-LANGUAGE  - the Accept-Language your browser sends in the request header
-AMAZON    - your Amazon domain
-ALEXA     - the URL you would use for the Alexa Web App
-CURL      - location of your cURL binary
-OPTS      - any cURL options you require
-TMP       - location of the temp dir
-OATHTOOL  - command line for oathtool MFA
-MFA_SECRET- the MFA secret
-SPEAKVOL  - the volume for speak messages ( if set to 0, volume levels are left untouched)
-NORMALVOL - if no current playing volume can be determined, fall back to normal volume
-VOLMAXAGE - max. age in minutes before volume is re-read from API
-DEVICEVOLNAME   - a list of device names with specific volume settings (space separated)
-DEVICEVOLSPEAK  - a list of speak volume levels - matching the devices above
-DEVICEVOLNORMAL - a list of normal volume levels- matching the devices above
-                  (current playing volume takes precedence for normal volume)
-REFRESH_TOKEN - the new preference over EMAIL/PASSWORD can be obtained here: https://github.com/adn77/alexa-cookie-cli
-```
-You will very likely want to set the language to:
-```
-export LANGUAGE='de,en-US;q=0.7,en;q=0.3'
-```
+## 📗 プロジェクトの概要
 
+「alexa-remote-control」を利用してAlexaを自由に喋らせる仕組みを構築します。
+PHP経由でAlexaとの通信を行います。
+
+### 利用している技術
+
+- apache
+- php
+- alexa-remote-control
+
+## 📦 ディレクトリ構造
 ```
-alexa-remote-control [-d <device>|ALL] -e <pause|play|next|prev|fwd|rwd|shuffle|repeat|vol:<0-100>> |
-                    -b [list|<"AA:BB:CC:DD:EE:FF">] | -q | -n | -r <"station name"|stationid> |
-                    -s <trackID|'Artist' 'Album'> | -t <ASIN> | -u <seedID> | -v <queueID> |
-                    -w <playlistId> | -i | -p | -P | -S | -a | -z | -l | -h |
-                    -m <multiroom_device> [device_1 .. device_X] | -lastalexa | -lastcommand
+.
+├── LICENSE
+├── README.md
+├── dc.sh
+├── docker
+│   ├── docker-compose.yml
+│   └── ubuntu
+└── htdocs
+    ├── alexa_remote_control.sh
+    ├── env.example.sh
+    ├── env.sh
+    ├── exec.php
+    └── index.php
 
-   -e : run command, additional SEQUENCECMDs:
-        weather,traffic,flashbriefing,goodmorning,singasong,tellstory,
-        speak:'<text/ssml>',automation:'<routine name>',sound:<soundeffect_name>,
-        textcommand:'<anything you would otherwise say to Alexa>',
-        playmusic:<channel e.g. TUNEIN, AMAZON_MUSIC>:'<music name>'
-
-   -b : connect/disconnect/list bluetooth device
-   -c : list 'playmusic' channels
-   -q : query queue
-   -n : query notifications
-   -r : play tunein radio
-   -s : play library track/library album
-   -t : play Prime playlist
-   -u : play Prime station
-   -v : play Prime historical queue
-   -w : play library playlist
-   -i : list imported library tracks
-   -p : list purchased library tracks
-   -P : list Prime playlists
-   -S : list Prime stations
-   -a : list available devices
-   -m : delete multiroom and/or create new multiroom containing devices
-   -lastalexa : print device that received the last voice command
-   -lastcommand : print last voice command or last voice command of specific device
-   -login     : Logs in, without further command (downloads cookie)
-   -z : print current volume level
-   -l : logoff
-   -h : help
 ```
 
-There's also a (NOW DEPRECATED) "plain" version, which lacks some functionality (-z, -i, -p, -P, -S and no radio station names and no routines) but doesn't require 'jq' for JSON processing.
+## 🔧 環境の構築
 
-Old option MFA
-----
-In order to use MFA, one needs to obtain the MFA_SECRET from Amazon account:
-1. You should have MFA using an App already working before proceeding
-1. Add a new app
-1. When presented with the QR-code select "can't scan code"
-1. You will be presented with the MFA shared secret, something like `1234 5678 9ABC DEFG HIJK LMNO PQRS TUVW XYZ0 1234 5678 9ABC DEFG`
-1. Now you have to generate a valid response code via `oathtool -b --totp "<MFA shared secret from above>"` and enter that in the web form
-1. Going from here the MFA shared secret becomes the MFA_SECRET for the alexa_remote_control script;
-*Treat that MFA_SECRET just like your password - DO NOT share it anywhere!!!*
+※ この環境を利用する為には、事前にdocker、docker-composeが動作する状態であることが前提条件です。
+(Windowsの場合は、以下を参考に「WSL」と「Docker Desktop for Windows」を用意してください)
 
-It is assumed that MFA secured accounts are less likely to get a captcha response during login - that's why MFA might yield better results if the plain username/password didn't work for you.
+### WSLのインストール（Windowsの場合）
+参考
+https://docs.microsoft.com/ja-jp/windows/wsl/install
 
-New option REFRESH_TOKEN
-----
-The Alexa-App way of logging in is using a REFRESH_TOKEN which allows for obtaining the session cookies. This replaces EMAIL/PASSWORD/MFA so those will not be exposed in any scripts anymore. For convinience I created a binary, ready to run: https://github.com/adn77/alexa-cookie-cli
+WSLでUbuntuを起動する
+```
+# 初回起動時に、ユーザ名とパスワードが聞かれます。
+# 何も入力せずにEnterを押すとroot ユーザーで利用できるようになるので、rootユーザーとして設定します。
 
-https://blog.loetzimmer.de/2021/09/alexa-remote-control-shell-script.html
+# 初めにライブラリを最新化します。
+$ apt update
+
+# 日本語に対応しておきます。
+$ apt -y install language-pack-ja
+$ update-locale LANG=ja_JP.UTF8
+$ apt -y install manpages-ja manpages-ja-dev
+```
+
+### Docker Desktop for Windows のインストール（Windowsの場合）
+
+https://docs.docker.com/docker-for-windows/install/
+```
+↓コマンドプロンプトでバージョンが表示されればOK
+docker --version
+```
+
+### WSL2から、Docker for Windows を利用できるようにする（Windowsの場合）
+参考
+https://qiita.com/endo_hizumi/items/0cc50bdfbd827579733e
+```
+１．通知領域から、dockerのアイコンを右クリックして、Settingを選択
+２．Generalのexpose deamon on~~のチェックを入れます。
+３．ResourcesのWSL INTEGRATION から、"Ubuntu" をスイッチをONにします。
+
+WSL 側のルートを Docker for Windows に合わせるように WSL のマウント設定を行います。
+$ vi /etc/wsl.conf
+---
+[automount]
+root = /
+options = "metadata"
+---
+
+以下のように Cドライブのパスが"/mnt/c/"→"/c/" に変更されていれば正常です。
+$ cd /c/Users/USER/github/laravel-react-boilerplate
+$ pwd
+/c/Users/USER/github/laravel-react-boilerplate
+
+# WSL 上にDockerとDocker Composeをインストールする。
+$ apt install docker
+$ apt install docker-compose
+
+これでWSLからWindows側にインストールしたDockerが利用できるようになります。
+```
+
+## 🖊️ 使い方
+
+```bash
+# Dockerを起動します。
+$ ./dc.sh start
+```
+
+Deviceを確認する
+http://localhost/exec.php?status
+![status](./status.png "status")
+
+メッセージを送信する
+http://localhost/exec.php?text_tts=テスト
+![message](./message.png "message")
+
+## 🔗 参考
+
+| プロジェクト| 概要|
+| :---------------------------------------| :-------------------------------|
+| [Alexa(Amazon Echo)をコマンドラインから自由に喋らせる方法](https://qiita.com/shge/items/169de61c8f246d26c110)| Alexa(Amazon Echo)をコマンドラインから自由に喋らせる方法|
+
+
+## 🎫 Licence
+
+[MIT](https://github.com/isystk/alexa-remote-control/blob/master/LICENSE)
+
+## 👀 Author
+
+[isystk](https://github.com/isystk)

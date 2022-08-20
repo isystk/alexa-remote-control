@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
-      - "443:443"
     restart: always
     volumes:
       - ../htdocs:/var/www/html
+#    command: /bin/sh -c "while :; do sleep 10; done"
