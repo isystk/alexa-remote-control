@@ -28,10 +28,9 @@ PHP経由でAlexaとの通信を行います。
 └── htdocs
     ├── alexa_remote_control.sh
     ├── env.example.sh
-    ├── env.sh
+    ├── env.sh ← このファイルは追加してください
     ├── exec.php
     └── index.php
-
 ```
 
 ## 🔧 環境の構築
@@ -98,13 +97,18 @@ $ apt install docker-compose
 ```bash
 # Dockerを起動します。
 $ ./dc.sh start
+
+# 設定ファイルにアカウント情報を記載してください。
+$ cd htdocs
+$ cp env.example.sh env.sh
+$ vi env.sh
 ```
 
-Deviceを確認する
+### Deviceを確認する
 http://localhost/exec.php?status
 ![status](./status.png "status")
 
-メッセージを送信する
+### メッセージを送信する
 http://localhost/exec.php?text_tts=テスト
 ![message](./message.png "message")
 
