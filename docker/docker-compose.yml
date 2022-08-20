@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+  ubuntu:
+    image: alexa-remote-control/ubuntu
+    container_name: alexa-remote-control-ubuntu
+    build:
+      context: ./ubuntu
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - ../htdocs:/var/www/html

@@ -1,0 +1,7 @@
+SET_EMAIL='xxxxxx'
+SET_PASSWORD='xxxxxx'
+SET_MFA_SECRET=''
+SET_LANGUAGE='ja-JP'
+SET_TTS_LOCALE='ja-JP'
+SET_AMAZON='amazon.co.jp'
+SET_ALEXA='alexa.amazon.co.jp'
